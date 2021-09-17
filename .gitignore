@@ -1,0 +1,6 @@
+/.idea/
+/target/
+/containerdata/
+/dependency-reduced-pom.xml
+
+*.iml
