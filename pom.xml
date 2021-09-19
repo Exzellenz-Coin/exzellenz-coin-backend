@@ -97,7 +97,21 @@
             <version>1.4.200</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- Excellence Coin Node -->
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>ExcellenceCoinNode</artifactId>
+            <version>0.0.1</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>myMavenRepoRead</id>
+            <url>https://mymavenrepo.com/repo/NW1hmapZrY0YRwHMReDq/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
