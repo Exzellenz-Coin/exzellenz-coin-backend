@@ -1,7 +1,7 @@
 package de.excellence;
 
 import com.google.common.collect.Lists;
-import de.excellence.api.HelloWorldResource;
+import de.excellence.api.*;
 import de.excellence.auth.BasicAuthenticator;
 import de.excellence.auth.TokenAuthenticator;
 import de.excellence.core.AuthToken;
@@ -76,13 +76,14 @@ public class ECBApplication extends Application<ECBConfiguration> {
     public void run(final ECBConfiguration configuration,
                     final Environment environment) {
         var sessionFactory = hibernateBundle.getSessionFactory();
-        new ECBService(
+        final ECBService eCBService = new ECBService(
                 new UserDao(sessionFactory),
                 new AuthTokenDao(sessionFactory)
         );
 
         // Registering the api endpoints
         environment.jersey().register(new HelloWorldResource());
+        environment.jersey().register(new LoginResource(eCBService));
 
         // Initializing and registering the authenticators
         environment.jersey().register(new AuthDynamicFeature(new ChainedAuthFilter<>(createAuthFilters())));
