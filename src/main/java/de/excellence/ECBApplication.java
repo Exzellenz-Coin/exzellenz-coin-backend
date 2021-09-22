@@ -1,5 +1,6 @@
 package de.excellence;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Lists;
 import de.excellence.api.*;
 import de.excellence.auth.BasicAuthenticator;
@@ -8,6 +9,7 @@ import de.excellence.core.AuthToken;
 import de.excellence.core.User;
 import de.excellence.db.AuthTokenDao;
 import de.excellence.db.UserDao;
+import de.excellence.node.NodeManager;
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthFilter;
@@ -22,8 +24,15 @@ import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import mainpackage.database.DatabaseManager;
+import mainpackage.util.JsonMapper;
+import mainpackage.util.KeySerializer;
+import mainpackage.util.PrivateKeyDeserializer;
+import mainpackage.util.PublicKeyDeserializer;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 
 public class ECBApplication extends Application<ECBConfiguration> {
@@ -70,20 +79,29 @@ public class ECBApplication extends Application<ECBConfiguration> {
                 return "migrations.sql";
             }
         });
+        // Add the Jackson-Module of the ExcellenceCoinNode project to Dropwizards Object Mapper
+        bootstrap.getObjectMapper().registerModule(JsonMapper.getModule());
     }
 
     @Override
     public void run(final ECBConfiguration configuration,
                     final Environment environment) {
+        var nodeManager = new NodeManager(configuration);
+        environment.lifecycle().manage(nodeManager);
+
         var sessionFactory = hibernateBundle.getSessionFactory();
         final ECBService eCBService = new ECBService(
+                nodeManager,
+                DatabaseManager.blockDao,
+                DatabaseManager.databaseUpdater,
                 new UserDao(sessionFactory),
                 new AuthTokenDao(sessionFactory)
         );
 
         // Registering the api endpoints
         environment.jersey().register(new HelloWorldResource());
-        environment.jersey().register(new LoginResource(eCBService));
+        environment.jersey().register(new LoginResource());
+        environment.jersey().register(new WalletResource());
 
         // Initializing and registering the authenticators
         environment.jersey().register(new AuthDynamicFeature(new ChainedAuthFilter<>(createAuthFilters())));

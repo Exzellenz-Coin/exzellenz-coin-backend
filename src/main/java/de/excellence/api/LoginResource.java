@@ -29,12 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class LoginResource {
-	private final ECBService eCBService;
-	
-	public LoginResource(ECBService eCBService) {
-		this.eCBService = eCBService;
-	}
-	
 	/**
 	 * This methods creates a token for a user and returns both in a hashmap.
 	 * 
@@ -65,7 +59,7 @@ public class LoginResource {
 		final User user = new User(createUser.username,
 				createUser.password
 				);
-		eCBService.userDao.save(user);
+		ECBService.instance.userDao.save(user);
 		return user;
 	}
 	/**
